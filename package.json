@@ -2,12 +2,16 @@
   "name": "pi-linear",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "author": "lynexer",
+  "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "biome check --write"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@11.0.8"
+  "packageManager": "pnpm@11.0.8",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.14",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
+  }
 }
