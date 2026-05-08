@@ -15,8 +15,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             }),
             body: Type.String({ description: 'Comment body (markdown)' })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
@@ -53,8 +53,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
                 })
             )
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
@@ -98,8 +98,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             }),
             body: Type.String({ description: 'New comment body (markdown)' })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const result = await sdk.updateComment(params.commentId, {
                 body: params.body
@@ -125,8 +125,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
                 description: 'Comment ID (UUID). Use linear_list_comments to find it.'
             })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             await sdk.deleteComment(params.commentId);
 

@@ -11,7 +11,7 @@ export function registerUserTools(pi: ExtensionAPI) {
         promptSnippet: 'List Linear workspace users (for assignee IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = requireSdk();
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const users = await sdk.users();
 
@@ -47,8 +47,8 @@ export function registerUserTools(pi: ExtensionAPI) {
                 })
             )
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const me = await sdk.viewer;
 

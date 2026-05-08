@@ -1,5 +1,5 @@
 import type { Issue, LinearClient } from '@linear/sdk';
-import type { AgentToolResult, ExtensionContext } from '@mariozechner/pi-coding-agent';
+import type { AgentToolResult } from '@mariozechner/pi-coding-agent';
 import { LinearService, NO_API_KEY_MESSAGE } from './client';
 
 export function errorResult(message: string): AgentToolResult<Record<string, never>> {
@@ -82,21 +82,15 @@ export function formatProjectLine(project: {
     return `- **${project.name}** [${state}]${progress}\n  ${project.url}`;
 }
 
-export function buildContext(_ctx: ExtensionContext): { signal: AbortSignal | undefined } {
-    // pi-coding-agent passes ctx to execute(); we extract only what we need
-    // ctx is optional at runtime, so we handle undefined gracefully
-    return { signal: undefined };
-}
-
 /** Returns the Linear SDK client, or an error result if no API key is configured. */
-export function requireSdk(): LinearClient | AgentToolResult<Record<string, never>> {
+export function requireSdk(cwd?: string): LinearClient | AgentToolResult<Record<string, never>> {
     const service = LinearService.getInstance();
-    if (!service.apiKey) {
+    if (!service.hasApiKey(cwd)) {
         return {
             content: [{ type: 'text', text: NO_API_KEY_MESSAGE }],
             details: {},
             terminate: false
         };
     }
-    return service.sdk;
+    return service.sdkFor(cwd);
 }

@@ -94,8 +94,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
             'Search Linear issues by text query using full-text and vector search. Returns issue IDs, titles, status, assignee, and team.',
         promptSnippet: 'Search Linear issues by text query',
         parameters: SearchParams,
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 10, 50);
 
@@ -143,8 +143,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
             'Get full details of a Linear issue by its identifier (e.g., ENG-123). Returns title, description, status, assignee, team, priority, labels, project, and URL.',
         promptSnippet: 'Get full details of a Linear issue by ID',
         parameters: GetIssueParams,
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
@@ -194,8 +194,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
             'Create a new Linear issue. Requires team ID and title at minimum. Optionally set description, priority, labels, assignee, and initial state.',
         promptSnippet: 'Create a new Linear issue',
         parameters: CreateIssueParams,
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const result = await sdk.createIssue({
                 teamId: params.teamId,
@@ -229,8 +229,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
             'Update an existing Linear issue. Provide issueId and any fields to change: title, description, state, assignee, priority, labels, or project.',
         promptSnippet: 'Update a Linear issue (status, assignee, title, description, priority)',
         parameters: UpdateIssueParams,
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
@@ -263,8 +263,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
             'List all issues for a team. Optionally filter by status type or include completed issues. Returns up to 50 issues.',
         promptSnippet: 'List all issues for a Linear team',
         parameters: ListIssuesParams,
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 25, 50);
 

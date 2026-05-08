@@ -15,8 +15,8 @@ export function registerRelationshipTools(pi: ExtensionAPI) {
                 description: 'Issue identifier (e.g., ENG-123)'
             })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
@@ -71,8 +71,8 @@ export function registerRelationshipTools(pi: ExtensionAPI) {
                     'Relationship type: "blocks" (issueId blocks relatedIssueId), "blocked" (issueId is blocked by relatedIssueId), "relates_to", or "duplicate"'
             })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);

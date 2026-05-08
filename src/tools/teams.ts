@@ -11,7 +11,7 @@ export function registerTeamTools(pi: ExtensionAPI) {
         promptSnippet: 'List all Linear teams (for getting team IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = requireSdk();
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const teams = await sdk.teams();
 
@@ -41,8 +41,8 @@ export function registerTeamTools(pi: ExtensionAPI) {
         parameters: Type.Object({
             teamId: Type.String({ description: 'Team ID (UUID)' })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const team = await sdk.team(params.teamId);
             const states = await team.states();
@@ -73,7 +73,7 @@ export function registerTeamTools(pi: ExtensionAPI) {
         promptSnippet: 'List all Linear issue labels (for label IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = requireSdk();
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const labels = await sdk.issueLabels();
 

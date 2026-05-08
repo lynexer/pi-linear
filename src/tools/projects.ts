@@ -23,8 +23,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
                 })
             )
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 25, 50);
 
@@ -69,8 +69,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
                 description: 'Project ID (UUID). Use linear_list_projects to find it.'
             })
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
             const project = await sdk.project(params.projectId);
 
@@ -141,8 +141,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
                 })
             )
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
             const input: Record<string, unknown> = {
@@ -194,8 +194,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
                 })
             )
         }),
-        async execute(_toolCallId, params) {
-            const sdk = requireSdk();
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
             const update: Record<string, unknown> = {};
