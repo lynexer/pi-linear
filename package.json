@@ -9,6 +9,12 @@
   },
   "keywords": [],
   "packageManager": "pnpm@11.0.8",
+  "dependencies": {
+    "@linear/sdk": "latest",
+    "@mariozechner/pi-coding-agent": "latest",
+    "@mariozechner/pi-ai": "latest",
+    "typebox": "latest"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
     "@types/node": "^25.6.0",
