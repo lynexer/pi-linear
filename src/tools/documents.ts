@@ -1,6 +1,7 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
 import {
+    errorResult,
     notFoundResult,
     requireSdk,
     resolveIssueByIdentifier,
@@ -57,6 +58,46 @@ const ListProjectDocumentsParams = Type.Object({
     }),
     limit: Type.Optional(
         Type.Number({ description: 'Max results (default: 25, max: 50)', default: 25 })
+    )
+});
+
+const CreateDocumentParams = Type.Object({
+    title: Type.String({ description: 'The title of the document.' }),
+    content: Type.Optional(
+        Type.String({ description: 'The document content in markdown format.' })
+    ),
+    projectId: Type.Optional(
+        Type.String({
+            description:
+                'Project ID (UUID or name) to attach the document to. Use linear_list_projects to find it.'
+        })
+    ),
+    issueId: Type.Optional(
+        Type.String({
+            description:
+                'Issue identifier (e.g., ENG-123) or UUID to attach the document to. Use linear_get_issue to find it.'
+        })
+    )
+});
+
+const UpdateDocumentParams = Type.Object({
+    documentId: Type.String({
+        description:
+            'Document ID (UUID) or URL slug. Use linear_search_documents or linear_list_*_documents to find it.'
+    }),
+    title: Type.Optional(Type.String({ description: 'New title for the document.' })),
+    content: Type.Optional(Type.String({ description: 'New content in markdown format.' })),
+    projectId: Type.Optional(
+        Type.String({
+            description:
+                'Project ID (UUID or name) to move the document to. Use linear_list_projects to find it.'
+        })
+    ),
+    issueId: Type.Optional(
+        Type.String({
+            description:
+                'Issue identifier (e.g., ENG-123) or UUID to move the document to. Use linear_get_issue to find it.'
+        })
     )
 });
 
@@ -261,6 +302,112 @@ export function registerDocumentTools(pi: ExtensionAPI) {
                     projectName: project.name,
                     count: resolved.length,
                     documents: resolved
+                }
+            };
+        }
+    });
+
+    // ── linear_create_document ──
+    pi.registerTool({
+        name: 'linear_create_document',
+        label: 'Linear Create Document',
+        description:
+            'Create a new Linear document. Documents are rich-text pages attached to projects, issues, or initiatives (e.g., specs, PRDs). Requires a title; optionally accepts markdown content and project/issue attachment.',
+        promptSnippet: 'Create a new Linear document',
+        parameters: CreateDocumentParams,
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
+            if (!('issues' in sdk)) return sdk;
+
+            const input: Record<string, unknown> = { title: params.title };
+            if (params.content) input.content = params.content;
+
+            if (params.projectId) {
+                const project = await resolveProjectByIdentifier(sdk, params.projectId);
+                if (!project) return notFoundResult('Project', params.projectId);
+                input.projectId = project.id;
+            }
+
+            if (params.issueId) {
+                const issue = await resolveIssueByIdentifier(sdk, params.issueId);
+                if (!issue) return notFoundResult('Issue', params.issueId);
+                input.issueId = issue.id;
+            }
+
+            const result = await sdk.createDocument(input as never);
+            const doc = await result.document;
+
+            if (!doc) {
+                return errorResult('Failed to create document.');
+            }
+
+            const text = `Created document **${doc.title}**
+${doc.url}`;
+
+            return {
+                content: [{ type: 'text', text }],
+                details: {
+                    id: doc.id,
+                    title: doc.title,
+                    url: doc.url
+                }
+            };
+        }
+    });
+
+    // ── linear_update_document ──
+    pi.registerTool({
+        name: 'linear_update_document',
+        label: 'Linear Update Document',
+        description:
+            'Update an existing Linear document. Can change title, content (markdown), or move the document between projects and issues. At least one of title, content, projectId, or issueId must be provided.',
+        promptSnippet: 'Update an existing Linear document',
+        parameters: UpdateDocumentParams,
+        async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+            const sdk = requireSdk(ctx?.cwd);
+            if (!('issues' in sdk)) return sdk;
+
+            const doc = await sdk.document(params.documentId);
+            if (!doc) return notFoundResult('Document', params.documentId);
+
+            const input: Record<string, unknown> = {};
+            if (params.title) input.title = params.title;
+            if (params.content) input.content = params.content;
+
+            if (params.projectId) {
+                const project = await resolveProjectByIdentifier(sdk, params.projectId);
+                if (!project) return notFoundResult('Project', params.projectId);
+                input.projectId = project.id;
+            }
+
+            if (params.issueId) {
+                const issue = await resolveIssueByIdentifier(sdk, params.issueId);
+                if (!issue) return notFoundResult('Issue', params.issueId);
+                input.issueId = issue.id;
+            }
+
+            if (Object.keys(input).length === 0) {
+                return errorResult(
+                    'Nothing to update. Provide at least one of: title, content, projectId, or issueId.'
+                );
+            }
+
+            const result = await sdk.updateDocument(doc.id, input as never);
+            const updated = await result.document;
+
+            if (!updated) {
+                return errorResult('Failed to update document.');
+            }
+
+            const text = `Updated document **${updated.title}**
+${updated.url}`;
+
+            return {
+                content: [{ type: 'text', text }],
+                details: {
+                    id: updated.id,
+                    title: updated.title,
+                    url: updated.url
                 }
             };
         }
