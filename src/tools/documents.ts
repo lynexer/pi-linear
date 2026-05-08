@@ -1,6 +1,11 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { notFoundResult, requireSdk, resolveIssueByIdentifier } from '../utils';
+import {
+    notFoundResult,
+    requireSdk,
+    resolveIssueByIdentifier,
+    resolveProjectByIdentifier
+} from '../utils';
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -48,7 +53,7 @@ const ListIssueDocumentsParams = Type.Object({
 
 const ListProjectDocumentsParams = Type.Object({
     projectId: Type.String({
-        description: 'Project ID (UUID). Use linear_list_projects to find it.'
+        description: 'Project ID (UUID or name). Use linear_list_projects to find it.'
     }),
     limit: Type.Optional(
         Type.Number({ description: 'Max results (default: 25, max: 50)', default: 25 })
@@ -223,7 +228,7 @@ export function registerDocumentTools(pi: ExtensionAPI) {
             const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
-            const project = await sdk.project(params.projectId);
+            const project = await resolveProjectByIdentifier(sdk, params.projectId);
             if (!project) return notFoundResult('Project', params.projectId);
 
             const limit = Math.min(params.limit ?? 25, 50);

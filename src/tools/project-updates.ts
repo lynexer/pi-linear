@@ -1,7 +1,7 @@
-import { StringEnum } from '@mariozechner/pi-ai';
+import type { ProjectUpdateHealthType } from '@linear/sdk';
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { errorResult, notFoundResult, requireSdk } from '../utils';
+import { errorResult, notFoundResult, requireSdk, resolveProjectByIdentifier } from '../utils';
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -22,20 +22,27 @@ function formatUpdateLine(update: {
 
 const CreateProjectUpdateParams = Type.Object({
     projectId: Type.String({
-        description: 'Project ID (UUID). Use linear_list_projects to find it.'
+        description: 'Project ID (UUID or name). Use linear_list_projects to find it.'
     }),
     body: Type.String({ description: 'The update content in markdown format.' }),
     health: Type.Optional(
-        StringEnum(['onTrack', 'atRisk', 'offTrack'], {
-            description:
-                'Health status of the project at time of update: onTrack (green), atRisk (yellow), offTrack (red).'
-        })
+        Type.Enum(
+            {
+                onTrack: 'onTrack',
+                atRisk: 'atRisk',
+                offTrack: 'offTrack'
+            } as const,
+            {
+                description:
+                    'Health status of the project at time of update: onTrack (green), atRisk (yellow), offTrack (red).'
+            }
+        )
     )
 });
 
 const ListProjectUpdatesParams = Type.Object({
     projectId: Type.String({
-        description: 'Project ID (UUID). Use linear_list_projects to find it.'
+        description: 'Project ID (UUID or name). Use linear_list_projects to find it.'
     }),
     limit: Type.Optional(
         Type.Number({ description: 'Max results (default: 25, max: 50)', default: 25 })
@@ -63,10 +70,13 @@ export function registerProjectUpdateTools(pi: ExtensionAPI) {
             const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
+            const project = await resolveProjectByIdentifier(sdk, params.projectId);
+            if (!project) return notFoundResult('Project', params.projectId);
+
             const result = await sdk.createProjectUpdate({
-                projectId: params.projectId,
+                projectId: project.id,
                 body: params.body,
-                health: params.health
+                health: params.health as ProjectUpdateHealthType | undefined
             });
             const update = await result.projectUpdate;
 
@@ -74,8 +84,7 @@ export function registerProjectUpdateTools(pi: ExtensionAPI) {
                 return errorResult('Failed to create project update.');
             }
 
-            const project = await update.project;
-            const text = `Created project update on **${project?.name ?? params.projectId}**\n${update.url}`;
+            const text = `Created project update on **${project.name}**\n${update.url}`;
 
             return {
                 content: [{ type: 'text', text }],
@@ -100,7 +109,7 @@ export function registerProjectUpdateTools(pi: ExtensionAPI) {
             const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
-            const project = await sdk.project(params.projectId);
+            const project = await resolveProjectByIdentifier(sdk, params.projectId);
             if (!project) return notFoundResult('Project', params.projectId);
 
             const limit = Math.min(params.limit ?? 25, 50);

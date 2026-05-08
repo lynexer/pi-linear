@@ -1,4 +1,4 @@
-import type { Issue, LinearClient } from '@linear/sdk';
+import type { Issue, LinearClient, Project } from '@linear/sdk';
 import type { AgentToolResult } from '@mariozechner/pi-coding-agent';
 import { LinearService, NO_API_KEY_MESSAGE } from './client';
 
@@ -80,6 +80,32 @@ export function formatProjectLine(project: {
     const state = project.state ?? 'Unknown';
     const progress = project.progress != null ? ` (${Math.round(project.progress * 100)}%)` : '';
     return `- **${project.name}** [${state}]${progress}\n  ${project.url}`;
+}
+
+/** Resolves a project identifier (UUID or name) to a Project entity. Tries UUID lookup first, then name search. */
+export async function resolveProjectByIdentifier(
+    sdk: LinearClient,
+    projectId: string
+): Promise<Project | null> {
+    // UUID check: standard format has 5 hyphen-separated groups, 36 chars
+    const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        projectId
+    );
+
+    if (looksLikeUuid) {
+        const project = await sdk.project(projectId);
+        if (project) return project;
+    }
+
+    // Try name search
+    const results = await sdk.searchProjects(projectId, { first: 1 });
+    const match = results.nodes?.[0];
+    if (match?.id) {
+        const project = await sdk.project(match.id);
+        return project ?? null;
+    }
+
+    return null;
 }
 
 /** Returns the Linear SDK client, or an error result if no API key is configured. */
