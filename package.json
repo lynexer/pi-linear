@@ -1,13 +1,20 @@
 {
   "name": "pi-linear",
   "version": "0.0.1",
-  "description": "",
+  "description": "Linear API integration for pi.dev.",
+  "keywords": [
+    "pi-package"
+  ],
   "author": "lynexer",
   "license": "MIT",
   "scripts": {
     "lint": "biome check --write"
   },
-  "keywords": [],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
   "packageManager": "pnpm@11.0.8",
   "dependencies": {
     "@linear/sdk": "latest",
