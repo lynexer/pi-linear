@@ -1,6 +1,6 @@
 # pi-linear
 
-Linear integration for [pi.dev](https://pi.dev). Exposes issue tracking, project management, comments, and issue relationships as tools an AI agent can call — and a `/linear` command for connection management.
+Linear integration for [pi.dev](https://pi.dev). Exposes issue tracking, project management, comments, documents, and issue relationships as tools an AI agent can call — and a `/linear` command for connection management.
 
 ## Install
 
@@ -23,6 +23,7 @@ pi-linear connects pi.dev to your [Linear](https://linear.app) workspace. Once c
 - **Manage comments** — add, list, update, and delete
 - **Manage projects** — create, update, list, and inspect
 - **Link issues** together with blocking/related/duplicate relationships
+- **Read documents** — search, get by ID, list by issue, list by project
 - **Browse teams, users, workflow states, and labels**
 
 All tools are callable by the agent in the same tool-calling loop as `bash`, `edit`, and `read`.
@@ -80,7 +81,7 @@ Use this to keep a shared team workspace key in the global config while overridi
 
 ## Tools
 
-pi-linear registers **20 tools** the agent can call. They appear in the agent's tool list automatically; no configuration needed.
+pi-linear registers **24 tools** the agent can call. They appear in the agent's tool list automatically; no configuration needed.
 
 ### Issues
 
@@ -132,6 +133,15 @@ pi-linear registers **20 tools** the agent can call. They appear in the agent's 
 | `linear_get_issue_relations` | Show what an issue blocks, is blocked by, relates to, or duplicates |
 | `linear_link_issues` | Create a relationship between two issues (blocks, blocked by, relates to, duplicate) |
 
+### Documents
+
+| Tool | Description |
+| --- | --- |
+| `linear_search_documents` | Search documents by text query across the workspace |
+| `linear_get_document` | Get full document details including markdown content by ID or slug |
+| `linear_list_issue_documents` | List all documents linked to a specific issue |
+| `linear_list_project_documents` | List all documents attached to a specific project |
+
 ## Configuration
 
 The extension stores its config in a simple JSON file.
@@ -171,4 +181,4 @@ This means:
 - **Issue lookup by identifier** — Issues are resolved by splitting `ENG-123` into team key + number and filtering, which avoids known bugs with the deprecated text search endpoint.
 - **Rate limits** — Search operations are rate-limited to 30 requests per minute by the Linear API. Standard CRUD operations have generous limits.
 - **No data stored beyond the API key** — All issue data is fetched live from Linear. Nothing is cached to disk.
-- **Source code** — 1,100+ lines of TypeScript. Biome for linting/formatting. Zero build step required — pi runs extensions as TypeScript directly.
+- **Source code** — 1,400+ lines of TypeScript. Biome for linting/formatting. Zero build step required — pi runs extensions as TypeScript directly.

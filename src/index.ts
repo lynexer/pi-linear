@@ -1,6 +1,7 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { registerLinearCommand } from './commands/linear';
 import { registerCommentTools } from './tools/comments';
+import { registerDocumentTools } from './tools/documents';
 import { registerIssueTools } from './tools/issues';
 import { registerProjectTools } from './tools/projects';
 import { registerRelationshipTools } from './tools/relationships';
@@ -14,5 +15,6 @@ export default function (pi: ExtensionAPI) {
     registerCommentTools(pi);
     registerProjectTools(pi);
     registerRelationshipTools(pi);
+    registerDocumentTools(pi);
     registerLinearCommand(pi);
 }
