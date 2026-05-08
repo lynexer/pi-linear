@@ -22,21 +22,19 @@ function readConfigFile(): string | null {
     }
 }
 
-function resolveApiKey(): string {
+function resolveApiKey(): string | null {
     const fileKey = readConfigFile();
     if (fileKey) return fileKey;
 
     const envKey = process.env.LINEAR_API_KEY;
     if (envKey) return envKey;
 
-    throw new Error(
-        'Linear API key not found. Set it via one of:\n' +
-            `  - ${CONFIG_PATH}: { "apiKey": "lin_api_..." }\n` +
-            '  - /linear login <key> (sets it up for you)\n' +
-            '  - LINEAR_API_KEY environment variable\n' +
-            'Get your key from Linear Settings → API → Personal API Keys.'
-    );
+    return null;
 }
+
+export const NO_API_KEY_MESSAGE =
+    'Linear API key not configured. Run `/linear login <key>` to set it up. ' +
+    'Get your key from Linear Settings → API → Personal API Keys.';
 
 export function saveApiKey(apiKey: string): string {
     mkdirSync(dirname(CONFIG_PATH), { recursive: true });
@@ -48,10 +46,10 @@ export function saveApiKey(apiKey: string): string {
 export class LinearService {
     private _client: LinearClient | null = null;
     private _graphQLClient: LinearGraphQLClient | null = null;
-    private _apiKey: string;
+    readonly apiKey: string | null;
 
     private constructor() {
-        this._apiKey = resolveApiKey();
+        this.apiKey = resolveApiKey();
     }
 
     static getInstance(): LinearService {
@@ -68,7 +66,10 @@ export class LinearService {
 
     get sdk(): LinearClient {
         if (!this._client) {
-            this._client = new LinearClient({ apiKey: this._apiKey });
+            if (!this.apiKey) {
+                throw new Error(NO_API_KEY_MESSAGE);
+            }
+            this._client = new LinearClient({ apiKey: this.apiKey });
         }
 
         return this._client;
@@ -76,9 +77,12 @@ export class LinearService {
 
     get graphQLClient(): LinearGraphQLClient {
         if (!this._graphQLClient) {
+            if (!this.apiKey) {
+                throw new Error(NO_API_KEY_MESSAGE);
+            }
             this._graphQLClient = new LinearGraphQLClient('https://api.linear.app/graphql', {
                 headers: {
-                    Authorization: this._apiKey
+                    Authorization: this.apiKey
                 }
             });
         }

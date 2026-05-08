@@ -1,8 +1,13 @@
 import { StringEnum } from '@mariozechner/pi-ai';
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
-import { errorResult, formatIssueLine, notFoundResult, resolveIssueByIdentifier } from '../utils';
+import {
+    errorResult,
+    formatIssueLine,
+    notFoundResult,
+    requireSdk,
+    resolveIssueByIdentifier
+} from '../utils';
 
 // ── Parameter schemas ──────────────────────────────────────────────
 
@@ -81,8 +86,6 @@ const ListIssuesParams = Type.Object({
 // ── Tool registration ──────────────────────────────────────────────
 
 export function registerIssueTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     // ── linear_search ──
     pi.registerTool({
         name: 'linear_search',
@@ -92,7 +95,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
         promptSnippet: 'Search Linear issues by text query',
         parameters: SearchParams,
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 10, 50);
 
             const result = await sdk.searchIssues(params.query, {
@@ -140,7 +144,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
         promptSnippet: 'Get full details of a Linear issue by ID',
         parameters: GetIssueParams,
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
 
@@ -190,7 +195,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
         promptSnippet: 'Create a new Linear issue',
         parameters: CreateIssueParams,
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const result = await sdk.createIssue({
                 teamId: params.teamId,
                 title: params.title,
@@ -224,7 +230,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
         promptSnippet: 'Update a Linear issue (status, assignee, title, description, priority)',
         parameters: UpdateIssueParams,
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
 
@@ -257,7 +264,8 @@ export function registerIssueTools(pi: ExtensionAPI) {
         promptSnippet: 'List all issues for a Linear team',
         parameters: ListIssuesParams,
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 25, 50);
 
             const filter: Record<string, unknown> = {

@@ -1,11 +1,8 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
-import { formatCommentLine, notFoundResult, resolveIssueByIdentifier } from '../utils';
+import { formatCommentLine, notFoundResult, requireSdk, resolveIssueByIdentifier } from '../utils';
 
 export function registerCommentTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     pi.registerTool({
         name: 'linear_add_comment',
         label: 'Linear Add Comment',
@@ -19,7 +16,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             body: Type.String({ description: 'Comment body (markdown)' })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
 
@@ -56,7 +54,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             )
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
 
@@ -100,7 +99,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             body: Type.String({ description: 'New comment body (markdown)' })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const result = await sdk.updateComment(params.commentId, {
                 body: params.body
             });
@@ -126,7 +126,8 @@ export function registerCommentTools(pi: ExtensionAPI) {
             })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             await sdk.deleteComment(params.commentId);
 
             const text = 'Comment deleted successfully.';

@@ -1,12 +1,9 @@
 import { StringEnum } from '@mariozechner/pi-ai';
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
-import { errorResult, formatProjectLine } from '../utils';
+import { errorResult, formatProjectLine, requireSdk } from '../utils';
 
 export function registerProjectTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     pi.registerTool({
         name: 'linear_list_projects',
         label: 'Linear List Projects',
@@ -27,7 +24,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
             )
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const limit = Math.min(params.limit ?? 25, 50);
 
             const filter: Record<string, unknown> = {};
@@ -72,7 +70,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
             })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const project = await sdk.project(params.projectId);
 
             if (!project) {
@@ -143,7 +142,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
             )
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
 
             const input: Record<string, unknown> = {
                 teamIds: params.teamIds,
@@ -195,7 +195,8 @@ export function registerProjectTools(pi: ExtensionAPI) {
             )
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
 
             const update: Record<string, unknown> = {};
             if (params.name !== undefined) update.name = params.name;

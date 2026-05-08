@@ -1,11 +1,8 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
-import { formatIssueLine } from '../utils';
+import { formatIssueLine, requireSdk } from '../utils';
 
 export function registerUserTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     pi.registerTool({
         name: 'linear_list_users',
         label: 'Linear List Users',
@@ -14,7 +11,8 @@ export function registerUserTools(pi: ExtensionAPI) {
         promptSnippet: 'List Linear workspace users (for assignee IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const users = await sdk.users();
 
             const text =
@@ -50,7 +48,8 @@ export function registerUserTools(pi: ExtensionAPI) {
             )
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const me = await sdk.viewer;
 
             const issues = await me.assignedIssues({

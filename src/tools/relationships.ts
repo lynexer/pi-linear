@@ -1,12 +1,9 @@
 import { StringEnum } from '@mariozechner/pi-ai';
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
-import { notFoundResult, resolveIssueByIdentifier } from '../utils';
+import { notFoundResult, requireSdk, resolveIssueByIdentifier } from '../utils';
 
 export function registerRelationshipTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     pi.registerTool({
         name: 'linear_get_issue_relations',
         label: 'Linear Get Issue Relations',
@@ -19,7 +16,8 @@ export function registerRelationshipTools(pi: ExtensionAPI) {
             })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);
 
@@ -74,7 +72,8 @@ export function registerRelationshipTools(pi: ExtensionAPI) {
             })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
 
             const issue = await resolveIssueByIdentifier(sdk, params.issueId);
             if (!issue) return notFoundResult('Issue', params.issueId);

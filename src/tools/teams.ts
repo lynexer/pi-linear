@@ -1,10 +1,8 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
-import { LinearService } from '../client';
+import { requireSdk } from '../utils';
 
 export function registerTeamTools(pi: ExtensionAPI) {
-    const service = LinearService.getInstance();
-
     pi.registerTool({
         name: 'linear_list_teams',
         label: 'Linear List Teams',
@@ -13,7 +11,8 @@ export function registerTeamTools(pi: ExtensionAPI) {
         promptSnippet: 'List all Linear teams (for getting team IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const teams = await sdk.teams();
 
             const text =
@@ -43,7 +42,8 @@ export function registerTeamTools(pi: ExtensionAPI) {
             teamId: Type.String({ description: 'Team ID (UUID)' })
         }),
         async execute(_toolCallId, params) {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const team = await sdk.team(params.teamId);
             const states = await team.states();
 
@@ -73,7 +73,8 @@ export function registerTeamTools(pi: ExtensionAPI) {
         promptSnippet: 'List all Linear issue labels (for label IDs)',
         parameters: Type.Object({}),
         async execute() {
-            const sdk = service.sdk;
+            const sdk = requireSdk();
+            if (!('issues' in sdk)) return sdk;
             const labels = await sdk.issueLabels();
 
             const text =
