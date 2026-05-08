@@ -1,6 +1,6 @@
 # pi-linear
 
-Linear integration for [pi.dev](https://pi.dev). Exposes issue tracking, project management, comments, documents, and issue relationships as tools an AI agent can call — and a `/linear` command for connection management.
+Linear integration for [pi.dev](https://pi.dev). Exposes issue tracking, project management, comments, documents, project updates, and issue relationships as tools an AI agent can call — and a `/linear` command for connection management.
 
 ## Install
 
@@ -24,6 +24,7 @@ pi-linear connects pi.dev to your [Linear](https://linear.app) workspace. Once c
 - **Manage projects** — create, update, list, and inspect
 - **Link issues** together with blocking/related/duplicate relationships
 - **Read documents** — search, get by ID, list by issue, list by project
+- **Post project updates** — create status updates on projects with health indicators
 - **Browse teams, users, workflow states, and labels**
 
 All tools are callable by the agent in the same tool-calling loop as `bash`, `edit`, and `read`.
@@ -81,7 +82,7 @@ Use this to keep a shared team workspace key in the global config while overridi
 
 ## Tools
 
-pi-linear registers **24 tools** the agent can call. They appear in the agent's tool list automatically; no configuration needed.
+pi-linear registers **27 tools** the agent can call. They appear in the agent's tool list automatically; no configuration needed.
 
 ### Issues
 
@@ -142,6 +143,14 @@ pi-linear registers **24 tools** the agent can call. They appear in the agent's 
 | `linear_list_issue_documents` | List all documents linked to a specific issue |
 | `linear_list_project_documents` | List all documents attached to a specific project |
 
+### Project Updates
+
+| Tool | Description |
+| --- | --- |
+| `linear_create_project_update` | Create a status update on a project with markdown body and health indicator |
+| `linear_list_project_updates` | List status updates for a project with dates, authors, and health statuses |
+| `linear_get_project_update` | Get full update details including body, diff from previous update, and metadata |
+
 ## Configuration
 
 The extension stores its config in a simple JSON file.
@@ -162,7 +171,7 @@ You never need to create these files manually. Use `/linear login` and `/linear 
 
 ## How It Works
 
-At extension load time, pi-linear registers all 20 tools and the `/linear` command. No API call is made at startup — the Linear client is created lazily on first use.
+At extension load time, pi-linear registers all 27 tools and the `/linear` command. No API call is made at startup — the Linear client is created lazily on first use.
 
 On each tool invocation:
 
@@ -181,4 +190,4 @@ This means:
 - **Issue lookup by identifier** — Issues are resolved by splitting `ENG-123` into team key + number and filtering, which avoids known bugs with the deprecated text search endpoint.
 - **Rate limits** — Search operations are rate-limited to 30 requests per minute by the Linear API. Standard CRUD operations have generous limits.
 - **No data stored beyond the API key** — All issue data is fetched live from Linear. Nothing is cached to disk.
-- **Source code** — 1,400+ lines of TypeScript. Biome for linting/formatting. Zero build step required — pi runs extensions as TypeScript directly.
+- **Source code** — 1,700+ lines of TypeScript. Biome for linting/formatting. Zero build step required — pi runs extensions as TypeScript directly.
