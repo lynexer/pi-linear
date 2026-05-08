@@ -147,7 +147,7 @@ pi-linear registers **27 tools** the agent can call. They appear in the agent's 
 
 | Tool | Description |
 | --- | --- |
-| `linear_create_project_update` | Create a status update on a project with markdown body and health indicator |
+| `linear_create_project_update` | Create a status update on a project (body required, health optional) |
 | `linear_list_project_updates` | List status updates for a project with dates, authors, and health statuses |
 | `linear_get_project_update` | Get full update details including body, diff from previous update, and metadata |
 

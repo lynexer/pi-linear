@@ -24,7 +24,7 @@ const CreateProjectUpdateParams = Type.Object({
     projectId: Type.String({
         description: 'Project ID (UUID). Use linear_list_projects to find it.'
     }),
-    body: Type.Optional(Type.String({ description: 'The update content in markdown format.' })),
+    body: Type.String({ description: 'The update content in markdown format.' }),
     health: Type.Optional(
         StringEnum(['onTrack', 'atRisk', 'offTrack'], {
             description:
@@ -57,26 +57,25 @@ export function registerProjectUpdateTools(pi: ExtensionAPI) {
         label: 'Linear Create Project Update',
         description:
             'Create a status update on a Linear project. Updates support markdown body content and an optional health status (onTrack, atRisk, offTrack). Use for posting progress reports, status summaries, or project notes.',
-        promptSnippet: 'Create a status update on a Linear project',
+        promptSnippet: 'Post a status update to a Linear project',
         parameters: CreateProjectUpdateParams,
         async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
             const sdk = requireSdk(ctx?.cwd);
             if (!('issues' in sdk)) return sdk;
 
-            const input: Record<string, unknown> = {
+            const result = await sdk.createProjectUpdate({
                 projectId: params.projectId,
                 body: params.body,
                 health: params.health
-            };
-
-            const result = await sdk.createProjectUpdate(input as never);
+            });
             const update = await result.projectUpdate;
 
             if (!update) {
                 return errorResult('Failed to create project update.');
             }
 
-            const text = `Created project update on **${params.projectId}**\n${update.url}`;
+            const project = await update.project;
+            const text = `Created project update on **${project?.name ?? params.projectId}**\n${update.url}`;
 
             return {
                 content: [{ type: 'text', text }],
